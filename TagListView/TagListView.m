@@ -161,8 +161,6 @@
             case alignRight:
                 frm.origin.x = self.frame.size.width - (currentRowWidth - [self marginX]);
                 break;
-            default:
-                break;
         }
         frm.size.width = currentRowWidth;
         currentRowView.frame = frm;
