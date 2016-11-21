@@ -94,6 +94,12 @@
     [self invalidateIntrinsicContentSize];
 }
 
+- (void)setAlignment:(TagListAlignment)alignment
+{
+    _alignment = alignment;
+    [self rearrangeViews];
+}
+
 # pragma mark - Interface builder
 
 - (void)prepareForInterfaceBuilder {
@@ -118,6 +124,7 @@
     int currentRow = 0;
     int currentRowTagCount = 0;
     CGFloat currentRowWidth = 0;
+    UIView *currentRowView;
     for(TagView *tagView in [self tagViews]) {
         CGRect tagViewFrame = [tagView frame];
         tagViewFrame.size = [tagView intrinsicContentSize];
@@ -128,24 +135,41 @@
             currentRow += 1;
             CGRect tempFrame = [tagView frame];
             tempFrame.origin.x = 0;
-            tempFrame.origin.y = (currentRow - 1) * ([self tagViewHeight] + [self marginY]);
+            currentRowView = [[UIView alloc] initWithFrame:CGRectMake(0, (currentRow - 1) * ([self tagViewHeight] + [self marginY]), self.frame.size.width, [self tagViewHeight])];
             [tagView setFrame:tempFrame];
             
             currentRowTagCount = 1;
             currentRowWidth = tagView.frame.size.width + [self marginX];
+            [self addSubview:currentRowView];
         } else {
             CGRect tempFrame = [tagView frame];
             tempFrame.origin.x = currentRowWidth;
-            tempFrame.origin.y = (currentRow - 1) * ([self tagViewHeight] + [self marginY]);
             [tagView setFrame:tempFrame];
             
             currentRowTagCount += 1;
             currentRowWidth += tagView.frame.size.width + [self marginX];
         }
         
-        [self addSubview:tagView];
+        CGRect frm = currentRowView.frame;
+        switch (_alignment) {
+            case alignLeft:
+                frm.origin.x = 0;
+                break;
+            case alignCenter:
+                frm.origin.x = (self.frame.size.width - (currentRowWidth - [self marginX])) / 2;
+                break;
+            case alignRight:
+                frm.origin.x = self.frame.size.width - (currentRowWidth - [self marginX]);
+                break;
+            default:
+                break;
+        }
+        frm.size.width = currentRowWidth;
+        currentRowView.frame = frm;
+        [currentRowView addSubview:tagView];
     }
     self.rows = currentRow;
+    [self invalidateIntrinsicContentSize];
 }
 
 # pragma mark - Manage tags
